@@ -12,6 +12,7 @@ from .data_handlers import (
     H5pyDataHandler,
     PandasHDFDataHandler,
     PickleDataHandler,
+    ModelDataHandler,
 )
 
 
@@ -206,7 +207,7 @@ class DataGenerator(six.with_metaclass(FeatureGeneratorType, DataBundlerMixin)):
 class FeatureGenerator(DataGenerator):
 
     def __init__(self, handlers=None, h5py_hdf_path=None, pandas_hdf_path=None,
-                 pickle_dir=None):
+                 pickle_dir=None, model_dir=None):
         if handlers is None:
             handlers = {}
         if ('memory' in self._handler_set
@@ -230,4 +231,10 @@ class FeatureGenerator(DataGenerator):
                 raise ValueError("pickle_dir should be specified "
                                  "when initiating FeatureGenerator.")
             handlers['pickle'] = PickleDataHandler(pickle_dir)
+        if ('model' in self._handler_set
+                and 'model' not in handlers):
+            if model_dir is None:
+                raise ValueError("model_dir should be specified "
+                                 "when initiating FeatureGenerator.")
+            handlers['model'] = ModelDataHandler(model_dir)
         super(FeatureGenerator, self).__init__(handlers)

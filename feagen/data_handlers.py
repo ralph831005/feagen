@@ -272,3 +272,31 @@ class PickleDataHandler(DataHandler):
                              end_in_new_line=False), \
                     open(pickle_path, "wb") as fp:
                 cPickle.dump(val, fp, protocol=cPickle.HIGHEST_PROTOCOL)
+
+
+class ModelDataHandler(DataHandler):
+
+    def __init__(self, model_dir):
+        mkdir_p(model_dir)
+        self.model_dir = model_dir
+
+    def can_skip(self, data_key):
+        data_path = os.path.join(self.model_dir, data_key)
+        if os.path.exists(data_path):
+            return True
+        return False
+
+    def get(self, key):
+        if isinstance(key, basestring):
+            return f"{os.path.join(self.model_dir, key)}"
+        data = {}
+        for k in key:
+            data[k] = f"{os.path.join(self.model_dir, k)}"
+        return data
+
+    def write_data(self, result_dict):
+        for key, val in six.viewitems(result_dict):
+            model_path = os.path.join(self.model_dir, f"{key}")
+            with SimpleTimer("Writing generated model %s to model file" % key,
+                             end_in_new_line=False):
+                    val.save(model_path)
